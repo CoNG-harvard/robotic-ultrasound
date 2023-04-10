@@ -2,6 +2,8 @@ import time
 import moveit_commander
 import rospy
 import geometry_msgs.msg
+from moveit_commander.conversions import pose_to_list
+
 
 import pickle as pkl
 
@@ -99,7 +101,7 @@ def main():
 		# by frame
 		ret, frame = vid.read()
 
-		pose = move_group.get_current_pose().pose
+		pose = pose_to_list(move_group.get_current_pose().pose)
 		
 		with data_lock:
 			data.append((i,pose,frame))
