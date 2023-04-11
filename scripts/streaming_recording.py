@@ -82,7 +82,7 @@ def main():
 	data = []
 	
 	# define a video capture object
-	vid = cv2.VideoCapture('/dev/video5')
+	vid = cv2.VideoCapture('/dev/video4')
 
 	# Define the robot pose listener
 	group_name = 'manipulator'
@@ -95,35 +95,39 @@ def main():
 	saving_thread.start()
 
 	i = 0
-	while(True):
-		
-		# Capture the video frame
-		# by frame
-		ret, frame = vid.read()
+	try:
+		while(True):
+			
+			# Capture the video frame
+			# by frame
+			ret, frame = vid.read()
 
-		pose = pose_to_list(move_group.get_current_pose().pose)
-		
-		with data_lock:
-			data.append((i,pose,frame))
+			# pose = []
+			pose = pose_to_list(move_group.get_current_pose().pose)
+			
+			# print('Current pose:',pose)
+			with data_lock:
+				data.append((i,pose,frame))
 
-		# Display the resulting frame
-		cv2.imshow('frame', frame)
-		
-		# the 'q' button is set as the
-		# quitting button you may use any
-		# desired button of your choice
-		if cv2.waitKey(1) & 0xFF == ord('q'):
-			terminate.set()
-			break
+			# Display the resulting frame
+			cv2.imshow('frame', frame)
+			
+			# the 'q' button is set as the
+			# quitting button you may use any
+			# desired button of your choice
+			if cv2.waitKey(1) & 0xFF == ord('q'):
+				terminate.set()
+				break
 
-		i+=1
+			i+=1
+	except KeyboardInterrupt:
+		terminate.set()
+		# After the loop release the cap object
+		vid.release()
+		# Destroy all the windows
+		cv2.destroyAllWindows()
 
-	# After the loop release the cap object
-	vid.release()
-	# Destroy all the windows
-	cv2.destroyAllWindows()
-
-	saving_thread.join()
+		saving_thread.join()
 
 			
 if __name__ == '__main__':

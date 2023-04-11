@@ -1,0 +1,12 @@
+Load data:
+import pickle as pkl
+file_name = 'tmp/0-4.pkl'
+with open(file_name,'rb') as f:
+    data = pkl.load(f)
+
+Data format:
+    data = [(i, coordinate[i], image[i]) for in range(N)]
+    
+    image[i].shape = (1080,500,3)
+    
+    coordinate[i] = (x,y,z,qw,qx,qy,qz)
