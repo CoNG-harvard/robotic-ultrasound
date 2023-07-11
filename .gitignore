@@ -1,3 +1,6 @@
+# Zip files
+*.zip
+
 # Pickle files
 *.pkl
 
