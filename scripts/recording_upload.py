@@ -3,17 +3,32 @@
 # Modules required by the get_key() function, used in the manual mode.
 import os
 import sys
+import time
 PKG_ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(PKG_ROOT_DIR)
 IMAGE_DIR = os.path.join(PKG_ROOT_DIR, 'image')
 
 import rospy
-from geometry_msgs.msg import WrenchStamped
-import moveit_commander
+from geometry_msgs.msg import WrenchStamped, Pose
 from moveit_commander.conversions import pose_to_list
 from sftp import Sftp_Helper
+from move_group_python_interface_tutorial import all_close
 
 import cv2
+import tf
+from math import pi
+
+ACTION_DICT = {
+	'w': ([0.05, 0., 0.], [0., 0., 0., 1.,]),
+	's': ([-0.05, 0., 0.], [0., 0., 0., 1.,]),
+	'a': ([0., 0.05, 0.], [0., 0., 0., 1.,]),
+	'd': ([0., -0.05, 0.], [0., 0., 0., 1.,]),
+	'i': ([0.,0.,0.], tf.transformations.quaternion_about_axis(10./180. * pi, (1,0,0))),
+	'k': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-10./180. * pi, (1,0,0))),
+	'j': ([0.,0.,0.], tf.transformations.quaternion_about_axis(10./180. * pi, (0,1,0))),
+	'l': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-10./180. * pi, (0,1,0)))
+
+}
 
 
 class WrenchSubscriber(object):
@@ -49,7 +64,7 @@ def get_force():
 	data = rospy.wait_for_message('/wrench', WrenchStamped, timeout=5.)
 	return data.wrench
 
-def get_pose(move_group):
+def get_pose(controller):
 	'''
 	The data format of returned value (robot end effector pose) is
 	position: 
@@ -65,7 +80,8 @@ def get_pose(move_group):
 	could be accessed like pose.position.x , which is a float.
 
 	'''
-	pose = move_group.get_current_pose().pose
+
+	pose = controller.get_tool_pose()
 	return pose
 
 def get_us_image(vid):
@@ -78,37 +94,37 @@ def save_us_image_and_upload(sftp_helper, image, index):
 	cv2.imwrite(image, os.path.join(IMAGE_DIR, file_name))
 	sftp_helper.Transfer_data(source_path = os.path.join(IMAGE_DIR, file_name), dest_path = '/home/local/PARTNERS/sk1064/workspace/test.png' )
 
-def robot_go_to_pose(pose):
+def robot_move(controller, action):
 	'''
 	to be added
 	'''
-	pass
+	(pos, quat) = ACTION_DICT.get(action, (None, None))
+	if pos is not None:
+		result = controller.goto_tool_frame(pos,quat)
+	
+	return result
 
 
-def main():	
-	rospy.init_node('record_upload_control')
+def main():
+	rospy.init_node('recording_upload')
 	
 	# define a video capture object
-	vid = cv2.VideoCapture('/dev/video5')
+	# vid = cv2.VideoCapture('/dev/video5')
 
 	# Define the robot pose listener
-	group_name = 'manipulator'
-	move_group = moveit_commander.MoveGroupCommander(group_name)
-	robot = moveit_commander.RobotCommander()
+	from controller import RobotController
+	controller = RobotController()
 
 	# initialize sftp helper
-	sftp_helper = Sftp_Helper(host = 'emimdgxa100gpu3.ccds.io')
-
+	# sftp_helper = Sftp_Helper(host = 'emimdgxa100gpu3.ccds.io')
 	i = 0
-
 	force = get_force()
 	print(force)
-	pose = get_pose(move_group)
+	pose = get_pose(controller)
 	print(pose)
-	image = get_us_image(vid)
-	save_us_image_and_upload(sftp_helper, image, i)
-
-
+	# image = get_us_image(vid)
+	robot_move(controller, 'w')
+	# save_us_image_and_upload(sftp_helper, image, i)
 
 			
 if __name__ == '__main__':

@@ -1,0 +1,16 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/mht/csw_ws/crazyswarm/ros_ws/devel/lib/python3/dist-packages",
+        "/home/mht/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/mht/ws_moveit/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/home/mht/PycharmProjects/safe-control-gym"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/mht/csw_ws/crazyswarm/ros_ws/devel/lib/python3/dist-packages",
+        "/home/mht/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/mht/ws_moveit/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/home/mht/PycharmProjects/safe-control-gym"
+    ]
+}
