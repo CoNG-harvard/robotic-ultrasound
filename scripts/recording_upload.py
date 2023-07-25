@@ -23,10 +23,14 @@ ACTION_DICT = {
 	's': ([-0.05, 0., 0.], [0., 0., 0., 1.,]),
 	'a': ([0., 0.05, 0.], [0., 0., 0., 1.,]),
 	'd': ([0., -0.05, 0.], [0., 0., 0., 1.,]),
-	'i': ([0.,0.,0.], tf.transformations.quaternion_about_axis(10./180. * pi, (1,0,0))),
-	'k': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-10./180. * pi, (1,0,0))),
-	'j': ([0.,0.,0.], tf.transformations.quaternion_about_axis(10./180. * pi, (0,1,0))),
-	'l': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-10./180. * pi, (0,1,0)))
+	'q': ([0., 0., 0.05], [0., 0., 0., 1.,]),
+	'e': ([0., 0., -0.05], [0., 0., 0., 1.,]),
+	'i': ([0.,0.,0.], tf.transformations.quaternion_about_axis(20./180. * pi, (1,0,0))),
+	'k': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-20./180. * pi, (1,0,0))),
+	'j': ([0.,0.,0.], tf.transformations.quaternion_about_axis(20./180. * pi, (0,1,0))),
+	'l': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-20./180. * pi, (0,1,0))),
+	'u': ([0.,0.,0.], tf.transformations.quaternion_about_axis(20./180. * pi, (0,0,1))),
+	'o': ([0.,0.,0.], tf.transformations.quaternion_about_axis(-20./180. * pi, (0,0,1)))
 
 }
 
@@ -101,7 +105,6 @@ def robot_move(controller, action):
 	(pos, quat) = ACTION_DICT.get(action, (None, None))
 	if pos is not None:
 		result = controller.goto_tool_frame(pos,quat)
-	
 	return result
 
 
@@ -123,8 +126,10 @@ def main():
 	pose = get_pose(controller)
 	print(pose)
 	# image = get_us_image(vid)
-	robot_move(controller, 'w')
-	# save_us_image_and_upload(sftp_helper, image, i)
+	for action in ['w','s','a','d','q','e', 'i','k','j','l','u','o']:
+		result = robot_move(controller, action)
+		print(action, result)
+		time.sleep(1)
 
 			
 if __name__ == '__main__':
