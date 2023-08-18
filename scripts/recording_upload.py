@@ -11,7 +11,7 @@ IMAGE_DIR = os.path.join(PKG_ROOT_DIR, 'image')
 import rospy
 from geometry_msgs.msg import WrenchStamped, Pose
 from moveit_commander.conversions import pose_to_list
-from sftp import Sftp_Helper
+# from sftp import Sftp_Helper
 from move_group_python_interface_tutorial import all_close
 
 import cv2
@@ -92,6 +92,7 @@ def get_us_image(vid):
 	# Capture the video frame
 	# by frame
 	ret, frame = vid.read()
+	return frame
 
 def save_us_image_and_upload(sftp_helper, image, index):
 	file_name = str(index) + '.png'
@@ -109,27 +110,46 @@ def robot_move(controller, action):
 
 
 def main():
-	rospy.init_node('recording_upload')
+	# rospy.init_node('recording_upload')
 	
 	# define a video capture object
-	# vid = cv2.VideoCapture('/dev/video5')
+	vid = cv2.VideoCapture('/dev/video1')
+	vid.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+	vid.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+	while True:
+		try:
+			image = get_us_image(vid)
+			# print(image)
+			cv2.imshow('frame', image)
+			# waits for user to press any key
+			# (this is necessary to avoid Python kernel form crashing)
+			cv2.waitKey(1)
+			time.sleep(0.05)
+		except KeyboardInterrupt:
+			cv2.destroyAllWindows()
+			break
+			# closing all open windows
+			
+	# time.sleep(2)
+	# file_name = str(1) + '.png'
+	# cv2.imwrite(image, os.path.join(IMAGE_DIR, file_name))
 
 	# Define the robot pose listener
-	from controller import RobotController
-	controller = RobotController()
+	# from controller import RobotController
+	# controller = RobotController()
 
-	# initialize sftp helper
-	# sftp_helper = Sftp_Helper(host = 'emimdgxa100gpu3.ccds.io')
-	i = 0
-	force = get_force()
-	print(force)
-	pose = get_pose(controller)
-	print(pose)
-	# image = get_us_image(vid)
-	for action in ['w','s','a','d','q','e', 'i','k','j','l','u','o']:
-		result = robot_move(controller, action)
-		print(action, result)
-		time.sleep(1)
+	# # initialize sftp helper
+	# # sftp_helper = Sftp_Helper(host = 'emimdgxa100gpu3.ccds.io')
+	# i = 0
+	# force = get_force()
+	# print(force)
+	# pose = get_pose(controller)
+	# print(pose)
+	
+	# for action in ['w','s','a','d','q','e', 'i','k','j','l','u','o']:
+	# 	result = robot_move(controller, action)
+	# 	print(action, result)
+	# 	time.sleep(1)
 
 			
 if __name__ == '__main__':
