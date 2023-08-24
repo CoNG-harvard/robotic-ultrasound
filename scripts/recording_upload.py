@@ -13,6 +13,7 @@ from geometry_msgs.msg import WrenchStamped, Pose
 from moveit_commander.conversions import pose_to_list
 # from sftp import Sftp_Helper
 from move_group_python_interface_tutorial import all_close
+from std_srvs.srv import Empty
 
 import cv2
 import tf
@@ -108,49 +109,14 @@ def robot_move(controller, action):
 		result = controller.goto_tool_frame(pos,quat)
 	return result
 
-
-def main():
-	# rospy.init_node('recording_upload')
-	
-	# define a video capture object
-	vid = cv2.VideoCapture('/dev/video1')
-	vid.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-	vid.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-	while True:
-		try:
-			image = get_us_image(vid)
-			# print(image)
-			cv2.imshow('frame', image)
-			# waits for user to press any key
-			# (this is necessary to avoid Python kernel form crashing)
-			cv2.waitKey(1)
-			time.sleep(0.05)
-		except KeyboardInterrupt:
-			cv2.destroyAllWindows()
-			break
-			# closing all open windows
-			
-	# time.sleep(2)
-	# file_name = str(1) + '.png'
-	# cv2.imwrite(image, os.path.join(IMAGE_DIR, file_name))
-
-	# Define the robot pose listener
-	# from controller import RobotController
-	# controller = RobotController()
-
-	# # initialize sftp helper
-	# # sftp_helper = Sftp_Helper(host = 'emimdgxa100gpu3.ccds.io')
-	# i = 0
-	# force = get_force()
-	# print(force)
-	# pose = get_pose(controller)
-	# print(pose)
-	
-	# for action in ['w','s','a','d','q','e', 'i','k','j','l','u','o']:
-	# 	result = robot_move(controller, action)
-	# 	print(action, result)
-	# 	time.sleep(1)
+def save_upload_client():
+    rospy.wait_for_service('SaveDataUpload')
+    try:
+        save_upload = rospy.ServiceProxy('SaveDataUpload', Empty)
+        save_upload()
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
 
 			
 if __name__ == '__main__':
-	main()
+	save_upload_client()
