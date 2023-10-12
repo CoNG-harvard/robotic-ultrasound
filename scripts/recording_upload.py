@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Modules required by the get_key() function, used in the manual mode.
 import os
@@ -98,7 +98,7 @@ def get_us_image(vid):
 def save_us_image_and_upload(sftp_helper, image, index):
 	file_name = str(index) + '.png'
 	cv2.imwrite(image, os.path.join(IMAGE_DIR, file_name))
-	sftp_helper.Transfer_data(source_path = os.path.join(IMAGE_DIR, file_name), dest_path = '/home/local/PARTNERS/sk1064/workspace/test.png' )
+	# sftp_helper.Transfer_data(source_path = os.path.join(IMAGE_DIR, file_name), dest_path = '/home/local/PARTNERS/sk1064/workspace/control/sam_t/test.png' )
 
 def robot_move(controller, action):
 	'''
@@ -109,6 +109,7 @@ def robot_move(controller, action):
 		result = controller.goto_tool_frame(pos,quat)
 	return result
 
+<<<<<<< Updated upstream
 def save_upload_client():
     rospy.wait_for_service('SaveDataUpload')
     try:
@@ -116,6 +117,37 @@ def save_upload_client():
         save_upload()
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
+=======
+
+def main():
+	rospy.init_node('recording_upload')
+	
+	# define a video capture object
+	vid = cv2.VideoCapture('/dev/video2')
+
+	# # Define the robot pose listener
+	# from controller import RobotController
+	# controller = RobotController()
+
+	# initialize sftp helper
+	# sftp_helper = Sftp_Helper(host = 'emimdgxa100gpu1.ccds.io')
+	i = 0
+	# force = get_force()
+	# print(force)
+	# pose = get_pose(controller)
+	# print(pose)
+	# image = get_us_image(vid)
+	ret, frame = vid.read()
+	print(frame)
+	cv2.imshow('image', frame)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
+	# save_us_image_and_upload(sftp_helper, image, i)
+	# for action in ['w','s','a','d','q','e', 'i','k','j','l','u','o']:
+	# 	result = robot_move(controller, action)
+	# 	print(action, result)
+	# 	time.sleep(1)
+>>>>>>> Stashed changes
 
 			
 if __name__ == '__main__':
