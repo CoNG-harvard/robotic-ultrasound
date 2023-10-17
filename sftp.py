@@ -33,7 +33,11 @@ class Sftp_Helper():
                 self.hostkeys.add(self.host, sftp.remote_server_key.get_name(), sftp.remote_server_key) # 호스트와 호스트키를 추가
                 self.hostkeys.save(pysftp.helpers.known_hosts()) # 새로운 호스트 정보 저장
 
+<<<<<<< Updated upstream
             sftp.put(source_path, dest_path)
+=======
+            sftp.put('./test.png','/home/local/PARTNERS/sk1064/workspace/control/sam_t/test.png')
+>>>>>>> Stashed changes
             # 모든 작업이 끝나면 접속 종료
             sftp.close()
         return 
