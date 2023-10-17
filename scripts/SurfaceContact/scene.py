@@ -26,10 +26,11 @@ def extractBodyPixels(rgb_scene,
     hi_hsv = body_color_hsv+hsv_radius
     mask = cv2.inRange(hsv_scene,lo_hsv,hi_hsv)
     return mask
-def normBodyCentroid(mask):
-    # mask: a binary 2-D array of shape (h,w)
-    # Output: (x,y)~float[0,1], the normalized centroid(mean) location of the non-zero pixels in mask. 
+def bodyCentroid(mask):
+    # mask: a binary 2-D array.
+    # Output: (x,y), the centroid(mean) location of the non-zero pixels in mask. 
+    # Note the y coordinate corresponds to the h direction, and x coordinate is in the w direction.
 
-    h,w = mask.shape
     body_pix = np.argwhere(mask)
-    return  np.mean(body_pix,axis = 0)/np.array([h,w])
+    coord = np.mean(body_pix,axis = 0)
+    return np.array(coord[::-1])
