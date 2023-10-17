@@ -12,5 +12,6 @@
         "/home/mht/ws_moveit/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages",
         "/home/mht/PycharmProjects/safe-control-gym"
-    ]
+    ],
+    "cmake.configureOnOpen": false
 }

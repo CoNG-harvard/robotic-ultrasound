@@ -1,7 +1,7 @@
 import rtde_control
 import rtde_receive
 import time
-from recording_upload_server import CaptureServer
+# from recording_upload_server import CaptureServer
 
 rtde_c = rtde_control.RTDEControlInterface("192.168.1.13")
 rtde_r = rtde_receive.RTDEReceiveInterface("192.168.1.13")
@@ -52,20 +52,20 @@ def simple_force_fbk_move(move_func, target_force_z):
 # move_down(-0.05)
 # move_y(-0.05)
 # print(get_force())
-server = CaptureServer()
-move_down(-0.05)
-move_until_contact()
-for i in range(3):
-    move_down(0.001)
-    time.sleep(1)
-# time.sleep(1)
-force = get_force()[2]
-for i in range(5):
-    simple_force_fbk_move(move_y, force)
-    time.sleep(1)
-    server.save_data()
-print(get_force())
-move_down(-0.05)
+# server = CaptureServer()
+move_down(0.10)
+# move_until_contact()
+# for i in range(3):
+#     move_down(0.001)
+#     time.sleep(1)
+# # time.sleep(1)
+# force = get_force()[2]
+# for i in range(5):
+#     simple_force_fbk_move(move_y, force)
+#     time.sleep(1)
+#     server.save_data()
+# print(get_force())
+# move_down(-0.05)
 # time.sleep(1)
 # for i in range(3):
 #     move_down(0.001)
