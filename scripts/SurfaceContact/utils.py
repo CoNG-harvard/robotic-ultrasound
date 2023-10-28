@@ -23,13 +23,14 @@ def normal_vector(points):
     '''
         points: shape = (n, space_dim). 
                 The points are assumed to lie roughly on the same plane.
-        normal_vec: the normal vector to the plane formed my points. Calculated using eigen decomposition.
+        Output: normal_vec.
+           Calculated using eigen decomposition.
     '''
     W = np.array(points)
     W_bar = np.mean(W,axis=0)
     M = (W-W_bar).T.dot((W-W_bar))
     eigvals,eigvecs = np.linalg.eig(M)
     normal_vec = eigvecs[:,np.argmin(eigvals)]
-    print(eigvals,eigvecs)
+    # print(eigvals,eigvecs)
 
     return normal_vec
