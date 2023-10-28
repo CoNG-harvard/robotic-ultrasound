@@ -1,4 +1,4 @@
-
+import numpy as np
 def patch_pixel_indx(cx,cy,h,w,patch_pixel_rad):
     '''
         Return the pixel indices that is within patch_pixel_rad pixel distance from the pixel (cy,cx).
@@ -16,3 +16,20 @@ def patch_pixel_indx(cx,cy,h,w,patch_pixel_rad):
             if (i-cy)**2+(j-cx)**2<=patch_pixel_rad**2:
                 patch_indx.append((i,j))    
     return patch_indx
+
+
+
+def normal_vector(points):
+    '''
+        points: shape = (n, space_dim). 
+                The points are assumed to lie roughly on the same plane.
+        normal_vec: the normal vector to the plane formed my points. Calculated using eigen decomposition.
+    '''
+    W = np.array(points)
+    W_bar = np.mean(W,axis=0)
+    M = (W-W_bar).T.dot((W-W_bar))
+    eigvals,eigvecs = np.linalg.eig(M)
+    normal_vec = eigvecs[:,np.argmin(eigvals)]
+    print(eigvals,eigvecs)
+
+    return normal_vec
