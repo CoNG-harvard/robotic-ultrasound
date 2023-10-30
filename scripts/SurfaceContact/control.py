@@ -7,9 +7,16 @@ from .utils import patch_pixel_indx, normal_vector
         
 
 class SurfaceContactControl:
-    def __init__(self,rsPipeline,rtde_c,rtde_r,
+    def __init__(self,
+        rsPipeline,rtde_c,rtde_r,
+        camera_pos_offset, probe_pos_offset,
         body_color_rgb = (227,124,100),
         body_hsv_rad = (50,150,150)):
+        '''
+           camera_pos_offset, probe_pos_offset: the relative pose of camera frame and probe tip in TCP frame.
+        '''
+        self.camera_2_tcp = camera_pos_offset
+        self.probe_2_tcp = probe_pos_offset
 
         self.pipeline = rsPipeline
         self.rc = rtde_c
@@ -29,7 +36,7 @@ class SurfaceContactControl:
 
     def getContact(self):
         speed = [0, 0, -0.050, 0, 0, 0]
-        self.rc.moveUntilContact(speed)
+        return self.rc.moveUntilContact(speed)
     
     def fetchCameraStreamData(self):
         # Get camera stream data
@@ -63,7 +70,7 @@ class SurfaceContactControl:
         # self.pure_pixel_control()
         return self.loc_normal_control()
 
-    def loc_normal_control(self):
+    def loc_normal_control(self,hover_height = 0.50):
         # Normal vector alignment control
         patch_pixel_rad = 50
 
@@ -77,11 +84,15 @@ class SurfaceContactControl:
         if len(patch_verts)>=3:
 
             
-            camera_tcp_offset = np.array([0,0,0,0,0,0]) # To be determined using measurement in lab.
-            camera_pose = self.rr.getActualTCPPose()+camera_tcp_offset
+            camera_tcp_offset = np.array(self.camera_2_tcp) # To be determined using measurement in lab.
+            tcp = self.rr.getActualTCPPose()
+
+            # Tip: always use poseTrans to do pose addition. Directly using the "+" operator is usually incorrect.
+            camera_pose = self.rc.poseTrans(tcp, camera_tcp_offset)
 
             body_loc_cam = np.mean(patch_verts,axis = 0) # Body centroid location in camera frame.
             
+
             body_normal_vec_cam = normal_vector(patch_verts) # Body surface normal vector in camera frame.
             
             # Body surface orientaion, three rotation angles, in camera frame.
@@ -90,15 +101,15 @@ class SurfaceContactControl:
             
             goal_pose_base = self.rc.poseTrans(camera_pose,
                                             np.hstack([body_loc_cam,body_ori_cam])+\
-                                            np.array([0,0,-0.30,0,0,0])
+                                            np.array([0,0,-hover_height,0,0,0])
                                             )
-            
+
             # Move the robot to the goal pose.
             speed = 0.03
             acc = 0.1
             self.rc.moveL(goal_pose_base,speed,acc)
 
-            return goal_pose_base
+            return np.linalg.norm(np.array(tcp[:3])-np.array(goal_pose_base[:3]))
         else:
             print("Not moving because not enough body pixels is seen.")
             return None
