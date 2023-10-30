@@ -133,7 +133,7 @@ class SurfaceContactControl:
         # plt.imshow(result)
 
         axes[1].scatter(self.target_pixel_loc[0],self.target_pixel_loc[1],marker="x",color = 'yellow',label='target',s=100)
-        axes[1].scatter(self.pixel_center[0],self.pixel_center[1],marker="+",color = 'white',label='center',s = 150)
+        axes[1].scatter(self.pixel_center[0],self.pixel_center[1],marker="+",color = 'white',label='crosshair',s = 150)
 
         arrow_width = 5
         head_length = 4.5*arrow_width
