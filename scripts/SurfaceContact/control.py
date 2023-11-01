@@ -135,6 +135,7 @@ class SurfaceContactControl:
 
     def showScene(self,axes):
         axes[0].imshow(self.rgb_img)
+        axes[0].set_title('Camera Image')
 
         result = cv2.bitwise_and(self.rgb_img,self.rgb_img,mask = self.mask)
         # plt.subplot(2,2,3)
@@ -144,15 +145,16 @@ class SurfaceContactControl:
         # plt.imshow(result)
 
         axes[1].scatter(self.target_pixel_loc[0],self.target_pixel_loc[1],marker="x",color = 'yellow',label='target',s=100)
-        axes[1].scatter(self.pixel_center[0],self.pixel_center[1],marker="+",color = 'white',label='crosshair',s = 150)
+        # axes[1].scatter(self.pixel_center[0],self.pixel_center[1],marker="+",color = 'white',label='crosshair',s = 150)
 
         arrow_width = 5
         head_length = 4.5*arrow_width
-        axes[1].arrow(*self.pixel_center,
-                *(self.pixel_offset-head_length*self.pixel_offset/la.norm(self.pixel_offset)),
-                color = 'red',width = arrow_width,head_length = head_length,
-                label = 'Moving direction')
+        # axes[1].arrow(*self.pixel_center,
+        #         *(self.pixel_offset-head_length*self.pixel_offset/la.norm(self.pixel_offset)),
+        #         color = 'red',width = arrow_width,head_length = head_length,
+        #         label = 'Moving direction')
         
         axes[1].imshow(result)
         axes[1].legend()
-        axes[1].set_title("Pixel distance to target:{}".format(la.norm(self.pixel_offset)))
+        axes[1].set_title('Body pixels')
+        # axes[1].set_title("Pixel distance to target:{}".format(la.norm(self.pixel_offset)))
