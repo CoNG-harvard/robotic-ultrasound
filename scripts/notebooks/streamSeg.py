@@ -25,6 +25,7 @@ try:
     rtde_r = rtde_receive.RTDEReceiveInterface("192.168.1.13")
     
     while True:
+        s = input('Go to default pose?')
         move_default_pose(rtde_c)
         s = input("Start:?")
         if s=='y':
