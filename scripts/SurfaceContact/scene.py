@@ -25,6 +25,7 @@ def extractBodyPixels(rgb_scene,
     lo_hsv = body_color_hsv-hsv_radius
     hi_hsv = body_color_hsv+hsv_radius
     mask = cv2.inRange(hsv_scene,lo_hsv,hi_hsv)
+    # print(hsv_scene.shape,mask.shape,mask)
     return mask
 def bodyCentroid(mask):
     # mask: a binary 2-D array.
