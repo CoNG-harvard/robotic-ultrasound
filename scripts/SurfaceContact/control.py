@@ -51,7 +51,7 @@ class SurfaceContactControl:
 
 
         self.mask =  extractBodyPixels(self.rgb_img,self.body_color_rgb,self.body_hsv_rad)
-        self.target_pixel_loc = np.array(bodyCentroid(self.mask),dtype = np.int)     
+        self.target_pixel_loc = np.array(bodyCentroid(self.mask),dtype = int)     
         # self.pixel_center = np.array([w//2,h//2])
         h,w = self.mask.shape
         self.pixel_center = np.array([w//2,280]) 
