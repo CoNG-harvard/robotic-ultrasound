@@ -1,6 +1,0 @@
-<launch>
-  <node name="RobotArmGoalPoseServer" pkg="eye_tracking_server" type="RobotArmGoalPoseServer.py" respawn="false" output="screen">
-  </node>
-  <node name="recording_upload_server" pkg="robotic-ultrasound" type="recording_upload_server.py" respawn="false" output="screen">
-  </node>
-</launch>

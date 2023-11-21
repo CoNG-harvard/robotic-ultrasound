@@ -4,10 +4,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class Flatten(nn.Module):
+    def forward(self, x):
+        return x.view(x.size(0), -1)
+    
 class UNet(torch.nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes,device,enable_classification = True):
         super(UNet, self).__init__()
-
+        self.device = device
+        self.enable_classification = enable_classification
         def CBR2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=True):
             layers = []
             layers += [
@@ -82,6 +87,9 @@ class UNet(torch.nn.Module):
         self.dec1_1 = CBR2d(in_channels=64, out_channels=64)
 
         self.fc = nn.Conv2d(in_channels=64, out_channels=num_classes, kernel_size=1, stride=1, padding=0, bias=True)
+
+        self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc2 = nn.Linear(256, 2)
         
     def forward(self, input_batch):
         x = self.normalize(input_batch)
@@ -135,12 +143,25 @@ class UNet(torch.nn.Module):
         dec1_1 = self.dec1_1(dec1_2)
 
         x = self.fc(dec1_1)
+        if self.enable_classification:
+            # Apply Global Average Pooling
+            x_cls = self.global_avg_pool(dec4_1)
+            # Flatten the output
+            x_cls = x_cls.view(x_cls.size(0), -1)
+            # Pass through the fully connected layer
+            x_cls = self.fc2(x_cls)
+            
+            return x, x_cls
+        else:
+            return x
         
-        return x
+        
     
     def normalize(self, input_batch):
     
-        x = input_batch["input"].float().cuda()
+        # x = input_batch["input"].float().cuda()
+        x = input_batch["input"].float().to(self.device)
+        
         x = x - x.min() / (x.max() - x.min())
         
         return x
