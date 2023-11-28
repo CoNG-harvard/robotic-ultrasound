@@ -1,5 +1,8 @@
+.DS_Store
 # Model weights
 *.pth
+*.nii.gz
+*.nii
 # Zip files
 *.zip
 
