@@ -29,10 +29,28 @@ def plot_slice(ploting_ax, img,slice,axis):
         ploting_ax.imshow(img[:,:,slice], cmap = 'gray')
     return ploting_ax
 
-def plot_img_at(img, coord, label='Target Location'):
+def visualize_vessel(vessel_img,target_pixel=None,label=None,
+                    vmin = 0.4,
+                    vmax = 0.8):
+    img = sitk.GetArrayViewFromImage(vessel_img)
+    img = np.swapaxes(img,0,2)
+    if target_pixel is None:
+        target_pixel = np.array(centroid3(img))
+        label = 'Centroid location'
+    plt.figure(figsize=(15,6))
+    plot_img_at(img,np.array(target_pixel,dtype=int),label,vmin,vmax)
+    plt.show()
+
+def plot_img_at(img, coord, label='Target Location',
+    vmin = 0.4,
+    vmax = 0.8):
     '''
         Plot the 3D slicing view of img at coord.
     '''
+    img = np.array(img)
+    img += -np.min(img)
+    img /= np.max(img)
+    print(np.max(img),np.min(img))
 
     l,p,s = coord
     
@@ -50,22 +68,21 @@ def plot_img_at(img, coord, label='Target Location'):
     ax.xaxis.set_label_position('top') 
     ax.set_xlabel(axis_label["P"])
     ax.set_ylabel(axis_label["S"])
-    ax.invert_yaxis()
+    # ax.invert_yaxis()
 
-    ax.imshow(np.squeeze(img[l,:,:]).T,cmap='gray')
-    ax.scatter(p,s,marker = target_marker,s=target_size,label=label,color = target_color)
-    ax.legend()
-
+    ax.imshow(np.squeeze(img[l,:,:]).T,cmap='gray',vmin=vmin,vmax=vmax)
+    ax.scatter(p,s,marker = target_marker,s=target_size,color = target_color)
+    
     ax = plt.subplot(1, 3, 2)
 
     ax.xaxis.tick_top()
     ax.xaxis.set_label_position('top') 
     ax.set_xlabel(axis_label["L"])
     ax.set_ylabel(axis_label["S"])
-    ax.invert_yaxis()
+    # ax.invert_yaxis()
 
     
-    ax.imshow(np.squeeze(img[:,p,:]).T,cmap='gray')
+    ax.imshow(np.squeeze(img[:,p,:]).T,cmap='gray',vmin=vmin,vmax=vmax)
     ax.scatter(l,s,marker = target_marker,s=target_size,color = target_color)
     
     
@@ -76,12 +93,13 @@ def plot_img_at(img, coord, label='Target Location'):
     ax.xaxis.set_label_position('top') 
     ax.set_xlabel(axis_label["L"])
     ax.set_ylabel(axis_label["P"])
-    ax.invert_yaxis()
+    # ax.invert_yaxis()
 
 
-    ax.imshow(np.squeeze(img[:,:,s]).T,cmap='gray')
-    ax.scatter(l,p,marker = target_marker,s=target_size,color = target_color)
-    
+    ax.imshow(np.squeeze(img[:,:,s]).T,cmap='gray',vmin=vmin,vmax=vmax)
+    ax.scatter(l,p,marker = target_marker,s=target_size,color = target_color,label=label)
+    ax.legend()
+
     
     return ax
 
@@ -121,15 +139,6 @@ def normalize_img(input_img, output_origin, output_spacing, output_size):
     output = sitk.Resample(input_img,output_size, identity_tf, sitk.sitkLinear,output_origin,output_spacing)
     return output
 
-def visualize_vessel(vessel_img,target_pixel=None,label=None):
-    img = sitk.GetArrayViewFromImage(vessel_img)
-    img = np.swapaxes(img,0,2)
-    if target_pixel is None:
-        target_pixel = np.array(centroid3(img))
-        label = 'Centroid location'
-    plt.figure(figsize=(15,6))
-    plot_img_at(img,np.array(target_pixel,dtype=int),label)
-    plt.show()
 
 def get_centroid_loc(vessel_img):
     img = sitk.GetArrayViewFromImage(vessel_img)
