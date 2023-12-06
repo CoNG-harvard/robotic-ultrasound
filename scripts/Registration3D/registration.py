@@ -22,11 +22,11 @@ def plot_slice(ploting_ax, img,slice,axis):
     '''
 
     if axis==0:
-        ploting_ax.imshow(img[slice])
+        ploting_ax.imshow(img[slice],cmap = 'gray')
     elif axis==1:
-        ploting_ax.imshow(img[:,slice,:])
+        ploting_ax.imshow(img[:,slice,:],cmap = 'gray')
     elif axis==2:
-        ploting_ax.imshow(img[:,:,slice])
+        ploting_ax.imshow(img[:,:,slice], cmap = 'gray')
     return ploting_ax
 
 def plot_img_at(img, coord, label='Target Location'):
@@ -52,7 +52,7 @@ def plot_img_at(img, coord, label='Target Location'):
     ax.set_ylabel(axis_label["S"])
     ax.invert_yaxis()
 
-    ax.imshow(np.squeeze(img[l,:,:]).T)
+    ax.imshow(np.squeeze(img[l,:,:]).T,cmap='gray')
     ax.scatter(p,s,marker = target_marker,s=target_size,label=label,color = target_color)
     ax.legend()
 
@@ -65,7 +65,7 @@ def plot_img_at(img, coord, label='Target Location'):
     ax.invert_yaxis()
 
     
-    ax.imshow(np.squeeze(img[:,p,:]).T)
+    ax.imshow(np.squeeze(img[:,p,:]).T,cmap='gray')
     ax.scatter(l,s,marker = target_marker,s=target_size,color = target_color)
     
     
@@ -79,7 +79,7 @@ def plot_img_at(img, coord, label='Target Location'):
     ax.invert_yaxis()
 
 
-    ax.imshow(np.squeeze(img[:,:,s]).T)
+    ax.imshow(np.squeeze(img[:,:,s]).T,cmap='gray')
     ax.scatter(l,p,marker = target_marker,s=target_size,color = target_color)
     
     
