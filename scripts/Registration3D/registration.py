@@ -42,7 +42,7 @@ def plot_img_at(img, coord, label='Target Location'):
     
     target_marker = 'x'
     target_size = 50
-    target_color = 'red'
+    target_color = 'yellow'
 
     ax = plt.subplot(1, 3, 1)
 
@@ -128,7 +128,7 @@ def visualize_vessel(vessel_img,target_pixel=None,label=None):
         target_pixel = np.array(centroid3(img))
         label = 'Centroid location'
     plt.figure(figsize=(15,6))
-    plot_img_at(img,np.array(target_pixel,dtype=int),)
+    plot_img_at(img,np.array(target_pixel,dtype=int),label)
     plt.show()
 
 def get_centroid_loc(vessel_img):
