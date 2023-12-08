@@ -117,9 +117,11 @@ def central_normalize_img(input_img,n_side = 200):
     ref_dx, ref_dy, ref_dz = 1.0, 1.0, 1.0
     ref_nx, ref_ny, ref_nz = n_side, n_side, n_side # Keep the grid size smaller than 150x150x150 for efficient computation
     
-    output_origin = centroid_physical-np.array([ref_nx, ref_ny, ref_nz])/2 
 
     output_spacing = [ref_dx,ref_dy,ref_dz]
+
+    output_origin = centroid_physical-np.array(output_spacing)*np.array([ref_nx, ref_ny, ref_nz])/2 
+
 
     # The number of voxels in the output
     output_size = [ref_nx,ref_ny,ref_nz]
@@ -161,6 +163,8 @@ def calculate_ct2us_transform(vessel_us,vessel_ct):
     fixed_image = sitk.GetImageFromArray(sitk.GetArrayFromImage(vessel_ct).astype(np.float64))
     fixed_image.SetOrigin(vessel_ct.GetOrigin())
     fixed_image.SetSpacing(vessel_ct.GetSpacing())
+    sitk.WriteImage(fixed_image,'resampled_CT.nii.gz')
+
 
     moving_image = shifted_us
 
