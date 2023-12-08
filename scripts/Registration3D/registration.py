@@ -32,7 +32,7 @@ def plot_slice(ploting_ax, img,slice,axis):
 def visualize_vessel(vessel_img,target_pixel=None,label=None,
                     vmin = 0.4,
                     vmax = 0.8):
-    img = sitk.GetArrayViewFromImage(vessel_img)
+    img = sitk.GetArrayViewFromImage(vessel_img).astype(float)
     img = np.swapaxes(img,0,2)
     if target_pixel is None:
         target_pixel = np.array(centroid3(img))
