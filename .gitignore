@@ -1,3 +1,5 @@
+# Figures
+*.png
 .DS_Store
 # Model weights
 *.pth
