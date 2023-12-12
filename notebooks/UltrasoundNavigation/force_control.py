@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import time
 
 def z_force_control(target_force,rtde_r,rtde_c,w0,force_err_tolerance=0.5):
     '''

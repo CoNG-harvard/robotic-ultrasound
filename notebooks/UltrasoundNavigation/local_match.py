@@ -5,7 +5,10 @@ import SimpleITK as sitk
 import numpy as np
 
 def normalize_vessel_slice(input_img):
+    
     output_spacing = np.array([1.0,1.0])
+
+    # output_spacing = np.array([2.0,2.0])
     output_size = (np.array(input_img.GetSize())*np.array(input_img.GetSpacing())/output_spacing).astype(np.uint32).tolist()
     output_origin = input_img.GetOrigin()
 
