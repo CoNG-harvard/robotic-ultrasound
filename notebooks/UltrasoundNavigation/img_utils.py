@@ -156,3 +156,28 @@ def visualize_local_match(body_ct,vessel_ct, pix, frame, pred_mask, pos,us_spaci
     plt.show()
 
     
+def upper_boundary(slice,l): 
+    m = np.argwhere(slice[:,l]>=0.6)
+    if len(m)>0:
+        return m[0,0]
+    else:
+        return np.inf
+
+def getTargetBox(ct,pix,w,h,t = None,binary_mask = False):
+    img = sitk.GetArrayViewFromImage(ct).astype(float)
+    img = np.swapaxes(img,0,2)
+    if not binary_mask:
+        img = np.array(img)
+        img += -np.min(img)
+        img /= np.max(img)
+    l,p,s = pix
+    slice = np.squeeze(img[:,:,s]).T
+    if t is None:
+        t = upper_boundary(slice,l)
+    target_box = slice[t:int(t+h),int(l-w/2):int(l+w/2)]    
+    return target_box,l,t
+     
+def getVesselBox(body_ct,vessel_ct,pix,w,h):
+    _,_,t= getTargetBox(body_ct,pix,w,h)
+    vessel_box,_,_ = getTargetBox(vessel_ct,pix,w,h,t=t,binary_mask=True)
+    return vessel_box

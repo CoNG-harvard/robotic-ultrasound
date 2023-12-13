@@ -23,12 +23,17 @@ def vessel_2D_match(fixed,moving):
 
         Outputs:
             pos: the position within [fixed] where maximal convolution product with [moving] is achieved.
+                The [0,0] pixel of the [moving] image is estimated to overlap with [pos] in the [fixed] image.
+
             am: the value of that maximal convolution product.
             matched_area: the pixels within [fixed] with its upper-left corner being [pos] and shape being the same as [moving].
     '''
 
     with torch.no_grad():
-        K = nn.Conv2d(in_channels=1,out_channels=1,kernel_size=moving.shape)
+        K = nn.Conv2d(in_channels=1,
+                      out_channels=1,
+                      kernel_size=moving.shape,
+                      padding = 'valid')
         K.weight.data = torch.Tensor(torch.Tensor(moving).reshape(1,1,*moving.shape))
         mask = K(torch.Tensor(fixed).reshape(1,1,*fixed.shape))
         mask = np.array(mask.data)
@@ -36,30 +41,41 @@ def vessel_2D_match(fixed,moving):
     mask = mask.reshape(mask.shape[-2:])
     am = np.max(mask)
     pos = np.argwhere(mask==am)[0]
-    matched_area=fixed[pos[0]:pos[0]+moving.shape[0],pos[1]:pos[1]+moving.shape[1]]
-    return  pos, am, matched_area
+    # matched_area=fixed[pos[0]:pos[0]+moving.shape[0],pos[1]:pos[1]+moving.shape[1]]
+    return  pos, am
 
 
-def local_match(vessel_ct_slice,vessel_us_slice, visualize = False):
+def match(vessel_ct_slice,vessel_us_slice, padding = False,visualize = False):
     '''
         vessel_ct_slice: Binary mask SITK Image. A slice of CT image.
         vessel_us_slice: Binary mask SITK Image. The vessel pixels within an ultrasound image. 
         
+        padding: If true, pad the boundaries of the ct slice with zero, so that the us slice can slide out of the boundary.
+                Adding padding increases computation quickly. 
+                Use padding if vessel_ct_slice is the target box within the ct slice, but not if vessel_ct_slice is the full slice.
         Output:
  
             pos: the position within the CT slice that matches the US slice.
             am: the value of the dot product between the CT slice and the US slice at [pos].
             matched_area: the sub image in CT slice matching the US slice.
     '''
+    moving = sitk.GetArrayFromImage(normalize_vessel_slice(vessel_us_slice))
 
     fixed = sitk.GetArrayFromImage(normalize_vessel_slice(vessel_ct_slice))
+    resampled_shape = fixed.shape
     fixed = (fixed-1/2)*2 
     # Shift the fixed image to be {-1,+1} can help alleviate false positives.
+    if padding:
+        fixed = np.pad(fixed,
+                    pad_width= [(moving.shape[0],moving.shape[0]),
+                                (moving.shape[1],moving.shape[1])],
+                    mode = 'constant')
+    # Pad the fixed image with zeros after each axis so that we allow the moving image to slide out of the fixed image.
 
-    moving = sitk.GetArrayFromImage(normalize_vessel_slice(vessel_us_slice))
-    # Not shifting the moving image. Keep it as {0,1}.
-
-    pos,am,matched = vessel_2D_match(fixed, moving)
+   
+    pos,am = vessel_2D_match(fixed, moving)
+    if padding:
+        pos-=np.array(moving.shape)
     # if visualize:
 
     #     ax = plt.subplot(1,3,1)
@@ -77,6 +93,12 @@ def local_match(vessel_ct_slice,vessel_us_slice, visualize = False):
     #     plt.title('vessel_us')
     #     plt.show()
 
-    pos = pos/np.array(fixed.shape) * np.array(vessel_ct_slice.GetSize()[::-1])
+    pos = pos/np.array(resampled_shape) * np.array(vessel_ct_slice.GetSize()[::-1])
     pos = pos[::-1]
-    return pos, am, matched.T
+    return pos, am
+
+def global_match(vessel_ct_slice,vessel_us_slice):
+    return match(vessel_ct_slice,vessel_us_slice)
+
+def local_match(vessel_box, vessel_us_slice):
+    return match(vessel_box,vessel_us_slice,padding=True)
