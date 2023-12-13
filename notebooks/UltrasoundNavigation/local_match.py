@@ -53,7 +53,11 @@ def local_match(vessel_ct_slice,vessel_us_slice, visualize = False):
     '''
 
     fixed = sitk.GetArrayFromImage(normalize_vessel_slice(vessel_ct_slice))
+    fixed = (fixed-1/2)*2 
+    # Shift the fixed image to be {-1,+1} can help alleviate false positives.
+
     moving = sitk.GetArrayFromImage(normalize_vessel_slice(vessel_us_slice))
+    # Not shifting the moving image. Keep it as {0,1}.
 
     pos,am,matched = vessel_2D_match(fixed, moving)
     # if visualize:
