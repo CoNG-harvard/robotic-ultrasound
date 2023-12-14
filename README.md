@@ -1,5 +1,5 @@
 # robotic-ultrasound
-The ROS package for the robotic ultrasound project.
+The workspace the robotic ultrasound project.
 
 # The robot
 <img src="./figures/ultrasound_robot.png" alt="robot" width="200"/>
