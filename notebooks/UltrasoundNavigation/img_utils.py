@@ -27,6 +27,19 @@ def centroid3(img):
     
     return cx, cy, cz
 
+def centroid2(img):
+    nx, ny = img.shape
+    print(nx,ny)
+    
+    imgx = np.sum(img, axis=1)
+    imgy = np.sum(img, axis=0)
+
+    denom = np.sum(img)
+    
+    cx = np.sum(np.linspace(0, nx-1, nx)*imgx)/denom
+    cy = np.sum(np.linspace(0, ny-1, ny)*imgy)/denom
+    
+    return cx, cy
 def get_slice_at(img, coord):
     img = sitk.GetArrayViewFromImage(img).astype(float)
     img = np.swapaxes(img,0,2)

@@ -45,7 +45,7 @@ def vessel_2D_match(fixed,moving):
     return  pos, am
 
 
-def match(vessel_ct_slice,vessel_us_slice, padding = False,visualize = False):
+def match(vessel_ct_slice,vessel_us_slice, padding = False,centralize=True,visualize = False):
     '''
         vessel_ct_slice: Binary mask SITK Image. A slice of CT image.
         vessel_us_slice: Binary mask SITK Image. The vessel pixels within an ultrasound image. 
@@ -63,8 +63,9 @@ def match(vessel_ct_slice,vessel_us_slice, padding = False,visualize = False):
 
     fixed = sitk.GetArrayFromImage(normalize_vessel_slice(vessel_ct_slice))
     resampled_shape = fixed.shape
-    fixed = (fixed-1/2)*2 
-    # Shift the fixed image to be {-1,+1} can help alleviate false positives.
+    if centralize:
+        fixed = (fixed-1/2)*2 
+        # Shift the fixed image to be {-1,+1} can help alleviate false positives.
     if padding:
         fixed = np.pad(fixed,
                     pad_width= [(moving.shape[0],moving.shape[0]),
@@ -101,4 +102,4 @@ def global_match(vessel_ct_slice,vessel_us_slice):
     return match(vessel_ct_slice,vessel_us_slice)
 
 def local_match(vessel_box, vessel_us_slice):
-    return match(vessel_box,vessel_us_slice,padding=True)
+    return match(vessel_box,vessel_us_slice,padding=True,centralize=False)
