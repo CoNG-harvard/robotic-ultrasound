@@ -96,10 +96,12 @@ def match(vessel_ct_slice,vessel_us_slice, padding = False,centralize=True,visua
 
     pos = pos/np.array(resampled_shape) * np.array(vessel_ct_slice.GetSize()[::-1])
     pos = pos[::-1]
-    return pos, am
+    return pos, am, moving, fixed
 
 def global_match(vessel_ct_slice,vessel_us_slice):
-    return match(vessel_ct_slice,vessel_us_slice)
+    pos,am,_,_ =  match(vessel_ct_slice,vessel_us_slice)
+    return pos, am
 
 def local_match(vessel_box, vessel_us_slice):
-    return match(vessel_box,vessel_us_slice,padding=True,centralize=False)
+    pos,am,_,_ =  match(vessel_box,vessel_us_slice,padding=True,centralize=False)
+    return pos, am
