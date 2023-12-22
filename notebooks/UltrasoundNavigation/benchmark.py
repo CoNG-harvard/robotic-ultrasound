@@ -1,6 +1,6 @@
 import yaml
 import numpy as np
-with open('../../config/registration_ground_truth.yaml','r') as fp: 
+with open('../../config/benchmark_registration.yaml','r') as fp: 
     truth = yaml.safe_load(fp)
     surface_center_pose = truth['surface_center_pose']
     ct_center_loc = truth['ct_center_loc']
