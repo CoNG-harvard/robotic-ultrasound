@@ -153,13 +153,15 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
                         rec_range = 0.03, track_IVC=True):
     SCREEN_BRIGHTNESS_THRESHOLD = 20
     
-    def record(start_pose,target_pose, n_waypoints = 50):
+    def record(start_pose,target_pose, n_waypoints = 50, remove_start=False):
         start_loc = start_pose[:3]
         target_loc = target_pose[:3]
         waypoints = np.linspace(start_loc,target_loc,n_waypoints)
+        if remove_start:
+            waypoints = waypoints[1:]
+
         waypoints = [list(w)+start_pose[3:] for w in waypoints]
 
-        rtde_c.moveL(start_pose,0.05,0.1)
         # y direction search has to be very careful, with low speed vel=0.001
         tcp_pose = rtde_r.getActualTCPPose()
         start_pose = tcp_pose
@@ -176,6 +178,7 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
         frames = []
         for w in waypoints:
             
+            rtde_c.moveL(w,0.05,0.1)
             _, frame = ultrasound_vid.read()
             frames.append(frame)
             ###### Must record the curr_pose right after the image read and before the neural network inference.
@@ -195,8 +198,6 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
                     # And move the robot to the start pose
                     break
 
-            rtde_c.moveL(w,0.05,0.1)
-        rtde_c.moveL(start_pose,0.05,0.1)
         return frames,poses
     start_pose = rtde_r.getActualTCPPose()
     frames = []
@@ -204,7 +205,7 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
     
     # Move and record in the feet direction
     target_pose = rtde_c.poseTrans(start_pose,[0,-rec_range,0,0,0,0])
-    f,p = record(start_pose,target_pose,n_waypoints = n_samples//2)
+    f,p = record(start_pose,target_pose,n_waypoints = n_samples//2+1)
     
     # Make sure the order is from feet towards head
     f.reverse()
@@ -214,7 +215,7 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
     poses+=p
     # Move and record in the head direction
     target_pose = rtde_c.poseTrans(start_pose,[0,rec_range,0,0,0,0])
-    f,p = record(start_pose,target_pose,n_waypoints = n_samples//2)
+    f,p = record(start_pose,target_pose,n_waypoints = n_samples//2+1, remove_start=True)
     frames+=f
     poses+=p
     return frames,poses
