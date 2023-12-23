@@ -9,6 +9,7 @@ import SimpleITK as sitk
 import cv2
 from cv2 import cvtColor
 import pickle as pkl
+from functools import partial
 def to_grayscale(img):
     original_shape = img.shape[:2]
     img = cvtColor(img,cv2.COLOR_BGR2GRAY).astype(float)
@@ -71,90 +72,154 @@ def flip_img(input_img,orders):
     flipped_ct.SetOrigin(input_img.GetOrigin())
     flipped_ct.SetSpacing(input_img.GetSpacing())
     return flipped_ct
+
+class US_frame:
+    def __init__(self,master,status_changed_command):
+        self.frame = tk.Frame(master)
+        self.fig = Figure(figsize=(1.5,3))
+        self.canvas = FigureCanvasTkAgg(self.fig,master=self.frame)
+        self.canvas.get_tk_widget().pack()
+        self.status = tk.IntVar(self.frame,0)
+        self.status_list = {"Not set":0, "Match":1, "Not match":2}
+        self.sbs = []
+        for key,val in self.status_list.items():
+             button = tk.Radiobutton(master = self.frame,
+                                     text = key,
+                                     variable=self.status,
+                                     value= val, command=status_changed_command).pack()
+             self.sbs.append(button)
+            
   
 class ResultAnnotationApp(tk.Tk):
     def __init__(self,fs,body_ct):
         
         super().__init__()
-        self.curr_obs_id = 0
+
         self.fs = fs
         self.body_ct = body_ct
+
+        self.curr_obs_id = 0
+        
+        self.curr_obs = self.load_curr_obs()
+        self.save_curr_obs()
+
         # Bind keypress event to handle_keypress()
         self.bind("<Key>", self.handle_keypress)
 
-        self.combo_label = tk.Label(master=self,text='Select observation from dropdown:')
-        self.combo_label.pack()
+        self.combo_label = tk.Label(master=self,text='Select observation from dropdown:').grid(row=0,column=0,columnspan=4,rowspan=1)
+        # self.combo_label.pack()
 
         self.combo = ttk.Combobox(
             state="readonly",
             values=list(range(len(fs))),
             master=self,
     )
+        self.combo.grid(row = 1,column=0,columnspan=4,rowspan=1)
         self.combo.bind("<<ComboboxSelected>>", self.observation_selected)
-        self.combo.pack()
+        # self.combo.pack()
 
         # the figure that will contain the plot 
-        self.fig = Figure(figsize = (15, 6), 
-                        dpi = 100) 
+        self.fig = Figure(figsize=(4,4)) 
 
         # creating the Tkinter canvas 
         # containing the Matplotlib figure 
         self.canvas = FigureCanvasTkAgg(self.fig, 
-                                    master = self)   
-        self.canvas.draw() 
+                                    master = self) 
+        self.canvas.get_tk_widget().grid(row=2,column=0,columnspan=4,rowspan=4)
 
-        # placing the canvas on the Tkinter window 
-        self.canvas.get_tk_widget().pack() 
+        self.US_frames = []
+        for i in range(20):
+            self.US_frames.append(self.create_us_frame(i))
+            self.US_frames[i].frame.grid(row = 3*(i//10),column = 5+i%10,rowspan=3)
 
-        # creating the Matplotlib toolbar 
-        self.toolbar = NavigationToolbar2Tk(self.canvas, 
-                                        self) 
-        self.toolbar.update() 
-
-        # placing the toolbar on the Tkinter window 
-        self.canvas.get_tk_widget().pack() 
         # setting the title  
         self.title('Plotting in Tkinter') 
         
         # dimensions of the main window 
-        self.geometry("500x500") 
+        self.geometry("2000x2000") 
         self.displayObs()
+       
 
-    def displayObs(self):
-        self.combo.set(self.curr_obs_id)
-        self.plot(self.curr_obs_id)
-    # plot function is created for  
-    # plotting the graph in  
-    # tkinter window 
-    def plot(self,i): 
-        f = self.fs[i]
+    def load_curr_obs(self):
+        f = self.fs[self.curr_obs_id]
+
+        print('Loading obs {}'.format(self.curr_obs_id),f)
 
         with open(obs_path+f,'rb') as fp:
             obs = pkl.load(fp)
+        if 'match_status' not in obs['with_slice_matching'].keys():
+            obs['with_slice_matching']['match_status'] = [0] * len(obs['with_slice_matching']['all_poses'])
+        return obs
+    
+
+    def save_curr_obs(self):
+        print("saving curr_obs")
+        f = self.fs[self.curr_obs_id]
+        with open(obs_path+f,'wb') as fp:
+            pkl.dump(self.curr_obs, fp)
+        return 0
+    def create_us_frame(self,i):
+        return US_frame(self,partial(self.us_match_status_changed,i=i))
+    
+    def us_match_status_changed(self,i):
+        self.curr_obs['with_slice_matching']['match_status'][i] = self.US_frames[i].status.get()
+
+    def displayObs(self):
+        self.combo.set(self.curr_obs_id)
+        self.plot_groundtruth(self.curr_obs)
+        self.draw_us(self.curr_obs)
+        
+
+    
+    # plot function is created for  
+    # plotting the graph in  
+    # tkinter window 
+    def plot_groundtruth(self,obs): 
         
         loc = obs['ct_target_loc']
         # cframe = obs['with_slice_matching']['center_frame']
         
         pix = self.body_ct.TransformPhysicalPointToIndex(loc)
-        # visualize_vessel(original_vessel_ct,pix,'Target Location')
-        ax = self.fig.add_subplot(1,1,1)
+        print(pix,loc)
+        ax = self.fig.gca()
+        ax.clear()
         visualize_body(body_ct,pix,'Target Location',vmin=0.6,vmax=0.8,ax=ax)
         self.canvas.draw() 
     
-        self.toolbar.update() 
 
+    def draw_us(self,obs):
+        for i in range(len(self.US_frames)):
+            ax= self.US_frames[i].fig.gca()
+            ax.clear()
+
+        frames = obs['with_slice_matching']['all_frames']
+        ss = obs['with_slice_matching']['match_status']
+        
+        for i in range(min(len(frames),len(self.US_frames))):
+            self.US_frames[i].status.set(ss[i])
+            ax = self.US_frames[i].fig.gca()
+            ax.imshow(frames[i])
+            ax.axis('off')
+            self.US_frames[i].canvas.draw()
 
     def observation_selected(self,event):
-        obs_id = int(self.combo.get())
-        self.curr_obs_id = obs_id
+        self.save_curr_obs()
+
+        new_obs_id = int(self.combo.get())
+        self.curr_obs_id = new_obs_id
+      
+        self.curr_obs = self.load_curr_obs()
         self.displayObs()
 
     def handle_keypress(self,event):
+        self.save_curr_obs()
+
         if event.keysym == 'Right':
             self.curr_obs_id = min(len(self.fs)-1,self.curr_obs_id+1)
         elif event.keysym == 'Left':
             self.curr_obs_id = max(0,self.curr_obs_id-1)
 
+        self.curr_obs = self.load_curr_obs()  
         self.displayObs()
 
 
