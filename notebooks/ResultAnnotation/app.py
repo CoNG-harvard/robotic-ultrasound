@@ -76,11 +76,12 @@ def flip_img(input_img,orders):
 class US_frame:
     def __init__(self,master,status_changed_command):
         self.frame = tk.Frame(master)
-        self.fig = Figure(figsize=(1.5,3))
+        self.fig = Figure(figsize=(1,2))
+        self.fig.tight_layout()
         self.canvas = FigureCanvasTkAgg(self.fig,master=self.frame)
         self.canvas.get_tk_widget().pack()
         self.status = tk.IntVar(self.frame,0)
-        self.status_list = {"Not set":0, "Match":1, "Not match":2}
+        self.status_list = {"Not match":0, "Match":1}
         self.sbs = []
         for key,val in self.status_list.items():
              button = tk.Radiobutton(master = self.frame,
@@ -106,7 +107,7 @@ class ResultAnnotationApp(tk.Tk):
         # Bind keypress event to handle_keypress()
         self.bind("<Key>", self.handle_keypress)
 
-        self.combo_label = tk.Label(master=self,text='Select observation from dropdown:').grid(row=0,column=0,columnspan=4,rowspan=1)
+        self.combo_label = tk.Label(master=self,text='Select observation from dropdown \n or press left/right arrow keys for different views.').grid(row=0,column=0,columnspan=2,rowspan=1)
         # self.combo_label.pack()
 
         self.combo = ttk.Combobox(
@@ -114,8 +115,12 @@ class ResultAnnotationApp(tk.Tk):
             values=list(range(len(fs))),
             master=self,
     )
-        self.combo.grid(row = 1,column=0,columnspan=4,rowspan=1)
+        self.combo.grid(row = 0,column=2,columnspan=2,rowspan=1)
         self.combo.bind("<<ComboboxSelected>>", self.observation_selected)
+
+        self.not_usable = tk.BooleanVar(self,False)
+        self.not_usable_botton = ttk.Checkbutton(self,text='Observation not usable',
+                                                variable=self.not_usable,onvalue=True, offvalue=False,command=self.notusable_clicked).grid(row = 1, column=0,columnspan=4,rowspan=1)
         # self.combo.pack()
 
         # the figure that will contain the plot 
@@ -130,7 +135,7 @@ class ResultAnnotationApp(tk.Tk):
         self.US_frames = []
         for i in range(20):
             self.US_frames.append(self.create_us_frame(i))
-            self.US_frames[i].frame.grid(row = 3*(i//10),column = 5+i%10,rowspan=3)
+            self.US_frames[i].frame.grid(row = 3*(i//7),column = 5+i%7,rowspan=3)
 
         # setting the title  
         self.title('Plotting in Tkinter') 
@@ -139,6 +144,9 @@ class ResultAnnotationApp(tk.Tk):
         self.geometry("2000x2000") 
         self.displayObs()
        
+    def notusable_clicked(self):
+        
+        self.curr_obs['not_usable'] = self.not_usable.get()
 
     def load_curr_obs(self):
         f = self.fs[self.curr_obs_id]
@@ -149,6 +157,10 @@ class ResultAnnotationApp(tk.Tk):
             obs = pkl.load(fp)
         if 'match_status' not in obs['with_slice_matching'].keys():
             obs['with_slice_matching']['match_status'] = [0] * len(obs['with_slice_matching']['all_poses'])
+        
+        if 'not_usable' not in obs.keys():
+            obs['not_usable'] = False
+        
         return obs
     
 
@@ -158,6 +170,7 @@ class ResultAnnotationApp(tk.Tk):
         with open(obs_path+f,'wb') as fp:
             pkl.dump(self.curr_obs, fp)
         return 0
+    
     def create_us_frame(self,i):
         return US_frame(self,partial(self.us_match_status_changed,i=i))
     
@@ -166,6 +179,8 @@ class ResultAnnotationApp(tk.Tk):
 
     def displayObs(self):
         self.combo.set(self.curr_obs_id)
+        self.not_usable.set(self.curr_obs['not_usable'])
+        
         self.plot_groundtruth(self.curr_obs)
         self.draw_us(self.curr_obs)
         
@@ -200,6 +215,8 @@ class ResultAnnotationApp(tk.Tk):
             ax = self.US_frames[i].fig.gca()
             ax.imshow(frames[i])
             ax.axis('off')
+            self.US_frames[i].fig.tight_layout()
+            
             self.US_frames[i].canvas.draw()
 
     def observation_selected(self,event):
