@@ -167,10 +167,8 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
         start_pose = tcp_pose
 
         # In the asynchorous mode of moveL, we have to actively monitor the robot speed to determine whether the robot has stopped.
-        speeds = []
         start_time = time.time()
 
-        time.sleep(0.01) # This will allow the robot to start moving a little
         n_hist = 5
         areas = deque(maxlen=n_hist)
 
@@ -179,6 +177,8 @@ def record_registration(model,device,rtde_c,rtde_r,ultrasound_vid,n_samples,
         for w in waypoints:
             
             rtde_c.moveL(w,0.05,0.1)
+            time.sleep(0.1) # This will allow the robot stablize for a bit.
+       
             _, frame = ultrasound_vid.read()
             frames.append(frame)
             ###### Must record the curr_pose right after the image read and before the neural network inference.
