@@ -1,20 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 from matplotlib.figure import Figure 
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,  
-NavigationToolbar2Tk) 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg 
 import numpy as np
 from matplotlib import pyplot as plt
 import SimpleITK as sitk
-import cv2
-from cv2 import cvtColor
 import pickle as pkl
 from functools import partial
-def to_grayscale(img):
-    original_shape = img.shape[:2]
-    img = cvtColor(img,cv2.COLOR_BGR2GRAY).astype(float)
-    img /= np.max(img)
-    return img
+
 def centroid3(img):
     nx, ny, nz = img.shape
     # print(nx,ny,nz)
@@ -107,7 +100,7 @@ class ResultAnnotationApp(tk.Tk):
         # Bind keypress event to handle_keypress()
         self.bind("<Key>", self.handle_keypress)
 
-        self.combo_label = tk.Label(master=self,text='Select observation from dropdown \n or press left/right arrow keys for different views.').grid(row=0,column=0,columnspan=2,rowspan=1)
+        self.combo_label = tk.Label(master=self,text='Select observation from dropdown \n or press left/right arrow keys for different target locations.').grid(row=0,column=0,columnspan=2,rowspan=1)
         # self.combo_label.pack()
 
         self.combo = ttk.Combobox(
@@ -119,7 +112,7 @@ class ResultAnnotationApp(tk.Tk):
         self.combo.bind("<<ComboboxSelected>>", self.observation_selected)
 
         self.not_usable = tk.BooleanVar(self,False)
-        self.not_usable_botton = ttk.Checkbutton(self,text='Observation not usable',
+        self.not_usable_botton = ttk.Checkbutton(self,text='Observations for target location not usable',
                                                 variable=self.not_usable,onvalue=True, offvalue=False,command=self.notusable_clicked).grid(row = 1, column=0,columnspan=4,rowspan=1)
         # self.combo.pack()
 
