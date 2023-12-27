@@ -20,3 +20,6 @@ Each of these ``.pkl`` files stores the scanning result for one particular targe
 
 In terminal, navigate to ``robotic-ultrasound/notebooks/ResultAnnotation``, then run ``$python app.py``.
 
+# GUI
+<img src="./AnnotationApp.png" alt="app" width="1000"/>
+
