@@ -135,8 +135,8 @@ class SurfaceContactControl:
 
     def showScene(self,axes):
         axes[0].imshow(self.rgb_img)
-        axes[0].scatter(self.rgb_img.shape[1]/2,self.rgb_img.shape[0]/2,
-                        marker='+',color ='yellow')
+        # axes[0].scatter(self.rgb_img.shape[1]/2,self.rgb_img.shape[0]/2,
+        #                 marker='+',color ='yellow')
         axes[0].set_title('Camera Image')
 
         result = cv2.bitwise_and(self.rgb_img,self.rgb_img,mask = self.mask)
@@ -148,7 +148,13 @@ class SurfaceContactControl:
 
         # print(self.target_pixel_loc[0],self.target_pixel_loc[1])
 
-        axes[1].scatter(self.target_pixel_loc[0],self.target_pixel_loc[1],marker="x",color = 'yellow',label='target',s=100)
+        axes[1].scatter(self.target_pixel_loc[0],self.target_pixel_loc[1],
+                        # edgecolor='blue', facecolor='none',
+                        color='blue',
+                        marker="v",label='Loc. to Contact',s=100)
+
+        # axes[1].scatter(self.target_pixel_loc[0],self.target_pixel_loc[1],marker="o",edgecolor = 'yellow',facecolor='none',label='Loc. to Contact',s=100)
+
         # axes[1].scatter(self.pixel_center[0],self.pixel_center[1],marker="+",color = 'white',label='crosshair',s = 150)
 
         arrow_width = 5
