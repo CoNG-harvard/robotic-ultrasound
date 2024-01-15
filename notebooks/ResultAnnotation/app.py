@@ -85,10 +85,11 @@ class US_frame:
             
   
 class ResultAnnotationApp(tk.Tk):
-    def __init__(self,fs,body_ct):
+    def __init__(self,obs_path,fs,body_ct):
         
         super().__init__()
 
+        self.obs_path = obs_path
         self.fs = fs
         self.body_ct = body_ct
 
@@ -146,7 +147,7 @@ class ResultAnnotationApp(tk.Tk):
 
         print('Loading obs {}'.format(self.curr_obs_id),f)
 
-        with open(obs_path+f,'rb') as fp:
+        with open(self.obs_path+f,'rb') as fp:
             obs = pkl.load(fp)
         if 'match_status' not in obs['with_slice_matching'].keys():
             obs['with_slice_matching']['match_status'] = [0] * len(obs['with_slice_matching']['all_poses'])
@@ -160,7 +161,7 @@ class ResultAnnotationApp(tk.Tk):
     def save_curr_obs(self):
         print("saving curr_obs")
         f = self.fs[self.curr_obs_id]
-        with open(obs_path+f,'wb') as fp:
+        with open(self.obs_path+f,'wb') as fp:
             pkl.dump(self.curr_obs, fp)
         return 0
     
@@ -234,15 +235,16 @@ class ResultAnnotationApp(tk.Tk):
 
 
 import os
-obs_path = './data/observations/'
-fs = os.listdir(obs_path)
+# data_root = './data_Jan3_0/data'
+data_root = './data_Jan7_0'
+fs = os.listdir("{}/observations/".format(data_root))
 
 
-body_ct = sitk.ReadImage('./data/nifty/CT_phantom_regular.nii.gz')
+body_ct = sitk.ReadImage('{}/nifty/CT_phantom_regular.nii.gz'.format(data_root))
 body_ct = flip_img(body_ct,[True,False,False])
 
 # the main Tkinter window 
-window = ResultAnnotationApp(fs,body_ct)
+window = ResultAnnotationApp("{}/observations/".format(data_root),fs,body_ct)
 
 # run the gui 
 window.mainloop() 

@@ -1,0 +1,9 @@
+# Data description
+
+10 trials of registration data collection.
+
+Contents of trial i:
+- img_i.nii.gz: 3D stack of US image.
+- prediction_i.seg.nrrd: segmentation for img_i.
+
+Both directly loadable to 3D Slicer.

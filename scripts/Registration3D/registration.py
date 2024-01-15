@@ -149,11 +149,15 @@ def get_centroid_loc(vessel_img):
     return np.array(vessel_img.TransformContinuousIndexToPhysicalPoint(target_pixel))
 
 def calculate_ct2us_transform(vessel_us,vessel_ct):
+    '''
+        vessel_us: an SITK image for the vessel, that already has the origin set to the centralized and resolution normalized.
+        vessel_ct: an SITK image for the vessel, that already has the vessel centralized and resolution normalized.
+    '''
     us_centroid_physical = get_centroid_loc(vessel_us)
     ct_centroid_physical = get_centroid_loc(vessel_ct)
     centroid_offset = sitk.TranslationTransform(3, us_centroid_physical-ct_centroid_physical)
     shifted_us = sitk.Resample(vessel_us,vessel_ct, centroid_offset)
-    shifted_us = central_normalize_img(shifted_us,150)
+    # shifted_us = central_normalize_img(shifted_us,150)
 
     sitk.WriteImage(shifted_us,'shifted_us.nii.gz')
 
@@ -172,28 +176,31 @@ def calculate_ct2us_transform(vessel_us,vessel_ct):
                                                         moving_image, 
                                                         sitk.Euler3DTransform(), 
                                                         sitk.CenteredTransformInitializerFilter.GEOMETRY)
+    
     num_iter = 10
     print('Start optimizing the transformation')
+   
     for ii in trange(num_iter):
         registration_method = sitk.ImageRegistrationMethod()
+   
         registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=20)
         registration_method.SetMetricSamplingStrategy(registration_method.REGULAR )
         registration_method.SetMetricSamplingPercentage(0.2)    
         registration_method.SetInterpolator(sitk.sitkNearestNeighbor)
-        registration_method.SetOptimizerAsGradientDescent(learningRate=1.0, numberOfIterations=30, convergenceMinimumValue=1e-7, convergenceWindowSize=10)
+        registration_method.SetOptimizerAsGradientDescent(learningRate=1.0, numberOfIterations=30,
+                                                           convergenceMinimumValue=1e-7, convergenceWindowSize=10)
         registration_method.SetOptimizerScalesFromPhysicalShift()
         
         
         # Don't optimize in-place. We want to run this cell multiple times.
         registration_method.SetInitialTransform(initial_transform, inPlace=False)
-        
         rigid_transform = registration_method.Execute(fixed_image, moving_image)
 
     moving_reg = sitk.Resample(moving_image,fixed_image, rigid_transform)
     sitk.WriteImage(moving_reg,'vessel_reg.nii.gz')
     CT2US = sitk.CompositeTransform(centroid_offset)
     CT2US.AddTransform(rigid_transform)
-    return CT2US
+    return CT2US, moving_image, fixed_image, moving_reg
 
 def get_centroid_loc(vessel_img):
     img = sitk.GetArrayViewFromImage(vessel_img)
