@@ -153,13 +153,15 @@ def calculate_ct2us_transform(vessel_us,vessel_ct):
         vessel_us: an SITK image for the vessel, that already has the origin set to the centralized and resolution normalized.
         vessel_ct: an SITK image for the vessel, that already has the vessel centralized and resolution normalized.
     '''
+    sitk.WriteImage(vessel_us,'resampled_us.nii.gz')
+
     us_centroid_physical = get_centroid_loc(vessel_us)
     ct_centroid_physical = get_centroid_loc(vessel_ct)
     centroid_offset = sitk.TranslationTransform(3, us_centroid_physical-ct_centroid_physical)
     shifted_us = sitk.Resample(vessel_us,vessel_ct, centroid_offset)
     # shifted_us = central_normalize_img(shifted_us,150)
 
-    sitk.WriteImage(shifted_us,'shifted_us.nii.gz')
+    # sitk.WriteImage(shifted_us,'shifted_us.nii.gz')
 
     ## https://simpleitk.org/SPIE2019_COURSE/04_basic_registration.html
 
@@ -167,7 +169,7 @@ def calculate_ct2us_transform(vessel_us,vessel_ct):
     fixed_image = sitk.GetImageFromArray(sitk.GetArrayFromImage(vessel_ct).astype(np.float64))
     fixed_image.SetOrigin(vessel_ct.GetOrigin())
     fixed_image.SetSpacing(vessel_ct.GetSpacing())
-    sitk.WriteImage(fixed_image,'resampled_CT.nii.gz')
+    # sitk.WriteImage(fixed_image,'resampled_CT.nii.gz')
 
 
     moving_image = shifted_us
@@ -177,7 +179,7 @@ def calculate_ct2us_transform(vessel_us,vessel_ct):
                                                         sitk.Euler3DTransform(), 
                                                         sitk.CenteredTransformInitializerFilter.GEOMETRY)
     
-    num_iter = 10
+    num_iter = 2
     print('Start optimizing the transformation')
    
     for ii in trange(num_iter):
@@ -197,7 +199,7 @@ def calculate_ct2us_transform(vessel_us,vessel_ct):
         rigid_transform = registration_method.Execute(fixed_image, moving_image)
 
     moving_reg = sitk.Resample(moving_image,fixed_image, rigid_transform)
-    sitk.WriteImage(moving_reg,'vessel_reg.nii.gz')
+    # sitk.WriteImage(moving_reg,'vessel_reg.nii.gz')
     CT2US = sitk.CompositeTransform(centroid_offset)
     CT2US.AddTransform(rigid_transform)
     return CT2US, moving_image, fixed_image, moving_reg
